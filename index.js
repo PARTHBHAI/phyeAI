@@ -23,8 +23,9 @@ app.post('/api/phye', async (req, res) => {
     if (!GEMINI_KEY) return res.status(500).json({ raw: "Server Error: API Key not configured on Render." });
 
     try {
+        // --- 🛠️ THE FIX: Strict Hinglish Enforcement ---
         const langInstruction = language === 'hi' 
-            ? 'Hinglish (Simple Hindi mixed with English physics terms)' 
+            ? 'Hinglish (Hindi conversational language written STRICTLY and EXCLUSIVELY in the English/Latin alphabet. Example: "Ye ek example hai hinglish ka. Physics bahut aasan hai." ABSOLUTELY DO NOT use the Devanagari script. Use English letters ONLY.)' 
             : 'Very simple, easy-to-understand English';
         
         // Advanced Physics Prompt

@@ -1,11 +1,10 @@
 {
   "name": "phye-backend",
   "version": "1.0.0",
-  "description": "Unified backend server for phye AI",
+  "description": "Backend API for Phye AI (Physics Solver)",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

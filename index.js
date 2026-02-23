@@ -1,16 +1,33 @@
-// ==========================================
-// 🌌 NEW: PHYE AI ROUTE (PHYSICS)
-// ==========================================
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const GEMINI_KEY = process.env.GEMINI_API_KEY;
+
+// 🛡️ Middleware & CORS Config
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.options('*', cors());
+app.use(express.json({ limit: '10mb' })); 
+
+// 🟢 Health Check Route (Good for checking if Render is awake)
+app.get('/', (req, res) => {
+    res.send("🌌 Phye AI (Physics Backend) is Online & Ready!");
+});
+
+// 🚀 Phye AI Route
 app.post('/api/phye', async (req, res) => {
     const { text, image, language } = req.body;
 
-    if (!GEMINI_KEY) return res.status(500).json({ raw: "Server Error: API Key not configured." });
+    if (!GEMINI_KEY) return res.status(500).json({ raw: "Server Error: API Key not configured on Render." });
 
     try {
         const langInstruction = language === 'hi' 
             ? 'Hinglish (Simple Hindi mixed with English physics terms)' 
             : 'Very simple, easy-to-understand English';
         
+        // Advanced Physics Prompt
         const prompt = `You are an expert Physics Tutor (CBSE 10th to College Level).
         Your goal is to explain physics phenomena, solve complex numericals, and derive equations so simply that any student can understand.
         Language to use: ${langInstruction}.
@@ -43,6 +60,7 @@ app.post('/api/phye', async (req, res) => {
         const payload = { 
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
+                // Using Gemini's native JSON mode to prevent parsing crashes
                 responseMimeType: "application/json"
             }
         };
@@ -51,6 +69,7 @@ app.post('/api/phye', async (req, res) => {
             payload.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: image } });
         }
 
+        // We use gemini-2.5-flash as it is highly optimized for JSON Schema enforcement
         const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
@@ -59,6 +78,7 @@ app.post('/api/phye', async (req, res) => {
 
         const data = await apiRes.json();
         
+        // Catch 429 Rate Limits
         if (data.error && data.error.code === 429) {
             const match = data.error.message.match(/retry in ([\d\.]+)s/i);
             return res.status(429).json({ rate_limit: true, retry_in: match ? Math.ceil(parseFloat(match[1])) : 45, raw: "AI Core cooling down." });
@@ -81,3 +101,5 @@ app.post('/api/phye', async (req, res) => {
         res.status(500).json({ raw: "Internal Server Error during processing." });
     }
 });
+
+app.listen(PORT, () => console.log(`🚀 Phye Backend running on port ${PORT}`));
